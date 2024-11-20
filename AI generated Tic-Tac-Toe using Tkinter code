@@ -1,0 +1,110 @@
+import tkinter as tk
+from tkinter import messagebox
+
+class TicTacToe:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Tic-Tac-Toe")
+        self.current_player = "X"
+        self.board = [""] * 9
+        self.buttons = []
+        self.scores = {"X": 0, "O": 0, "Draws": 0}
+
+        self.setup_ui()
+
+    def setup_ui(self):
+        # Create the main frame
+        main_frame = tk.Frame(self.root, padx=10, pady=10)
+        main_frame.pack()
+
+        # Create the Tic-Tac-Toe grid
+        board_frame = tk.Frame(main_frame)
+        board_frame.grid(row=0, column=0, pady=10)
+        for i in range(9):
+            button = tk.Button(
+                board_frame, text="", font=("Helvetica", 20), height=2, width=5,
+                command=lambda idx=i: self.on_click(idx)
+            )
+            button.grid(row=i//3, column=i%3, padx=5, pady=5)
+            self.buttons.append(button)
+
+        # Create a frame for game information
+        info_frame = tk.Frame(main_frame)
+        info_frame.grid(row=1, column=0, pady=10)
+
+        # Current Player Label
+        self.player_label = tk.Label(info_frame, text=f"Current Player: {self.current_player}", font=("Helvetica", 14))
+        self.player_label.pack()
+
+        # Score Label
+        self.score_label = tk.Label(info_frame, text=self.get_score_text(), font=("Helvetica", 14))
+        self.score_label.pack()
+
+        # Create a frame for buttons
+        button_frame = tk.Frame(main_frame)
+        button_frame.grid(row=2, column=0, pady=10)
+
+        # Reset Board Button
+        reset_board_button = tk.Button(button_frame, text="Reset Board", font=("Helvetica", 12), command=self.reset_board)
+        reset_board_button.grid(row=0, column=0, padx=10)
+
+        # Reset Scores and Game Button
+        reset_scores_button = tk.Button(button_frame, text="Reset Scores and Game", font=("Helvetica", 12), command=self.reset_scores_and_game)
+        reset_scores_button.grid(row=0, column=1, padx=10)
+
+    def get_score_text(self):
+        return f"Player X: {self.scores['X']} | Player O: {self.scores['O']} | Draws: {self.scores['Draws']}"
+
+    def on_click(self, idx):
+        if self.board[idx] == "":
+            self.board[idx] = self.current_player
+            self.buttons[idx].config(text=self.current_player)
+            if self.check_winner():
+                messagebox.showinfo("Game Over", f"Player {self.current_player} wins!")
+                self.scores[self.current_player] += 1
+                self.update_score_label()
+                self.reset_board()
+            elif "" not in self.board:
+                messagebox.showinfo("Game Over", "It's a draw!")
+                self.scores["Draws"] += 1
+                self.update_score_label()
+                self.reset_board()
+            else:
+                self.current_player = "O" if self.current_player == "X" else "X"
+                self.update_player_label()
+
+    def check_winner(self):
+        # Define winning combinations
+        winning_combinations = [
+            (0, 1, 2), (3, 4, 5), (6, 7, 8),  # Rows
+            (0, 3, 6), (1, 4, 7), (2, 5, 8),  # Columns
+            (0, 4, 8), (2, 4, 6)              # Diagonals
+        ]
+
+        for a, b, c in winning_combinations:
+            if self.board[a] == self.board[b] == self.board[c] and self.board[a] != "":
+                return True
+        return False
+
+    def reset_board(self):
+        self.board = [""] * 9
+        self.current_player = "X"
+        for button in self.buttons:
+            button.config(text="")
+        self.update_player_label()
+
+    def reset_scores_and_game(self):
+        self.scores = {"X": 0, "O": 0, "Draws": 0}
+        self.reset_board()
+        self.update_score_label()
+
+    def update_score_label(self):
+        self.score_label.config(text=self.get_score_text())
+
+    def update_player_label(self):
+        self.player_label.config(text=f"Current Player: {self.current_player}")
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    game = TicTacToe(root)
+    root.mainloop()
